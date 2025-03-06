@@ -1,4 +1,4 @@
-# HypeScaleDocument
+# Hype Scale Document
 
 ![Hype-AnimationFrame](https://playground.maxziebell.de/Hype/ScaleDocument/HypeScaleDocument.jpg)
 
