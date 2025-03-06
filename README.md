@@ -1,6 +1,6 @@
 # Hype Scale Document
 
-![Hype-AnimationFrame](https://playground.maxziebell.de/Hype/ScaleDocument/HypeScaleDocument.jpg?)
+![Hype-AnimationFrame](https://playground.maxziebell.de/Hype/ScaleDocument/HypeScaleDocument.jpg?1)
 
 A Tumult Hype extension for scaling documents to fit different screen sizes. This extension allows Hype documents to automatically scale according to various modes and constraints, making responsive design simpler and more flexible.
 
