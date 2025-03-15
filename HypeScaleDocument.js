@@ -9,6 +9,7 @@
 * 1.0.1 Added minScale and maxScale options
 * 1.0.2 Added alignment options as alignment
 * 1.0.3 Added scaleFactor option with default value of 1
+* 1.0.4 Added support for scaling based on parent container size
  */
 
 // Ensure the extension isn't redefined
@@ -21,7 +22,8 @@ if ('HypeScaleDocument' in window === false) {
 			maxScale: null,
 			minScale: null,
 			alignment: 'center', // Options: 'top', 'center', 'bottom'
-			scaleFactor: 1
+			scaleFactor: 1,
+			useParentContainer: true // New option to enable/disable parent container scaling
 		};
 
 		function setDefault(key, value) {
@@ -48,8 +50,22 @@ if ('HypeScaleDocument' in window === false) {
 
 			document.documentElement.style.overflow = 'hidden';
 
-			var parentWidth = window.innerWidth;
-			var parentHeight = window.innerHeight;
+			// Determine if container is directly under body or has another parent
+			const isDirectChildOfBody = container.parentElement === document.body;
+			
+			// Get parent dimensions based on container position
+			var parentWidth, parentHeight;
+			
+			if (!isDirectChildOfBody && _default.useParentContainer) {
+				// Use parent container dimensions
+				const parent = container.parentElement;
+				parentWidth = parent.clientWidth;
+				parentHeight = parent.clientHeight;
+			} else {
+				// Use window dimensions (original behavior)
+				parentWidth = window.innerWidth;
+				parentHeight = window.innerHeight;
+			}
 
 			var docWidth = container.offsetWidth;
 			var docHeight = container.offsetHeight;
@@ -65,10 +81,10 @@ if ('HypeScaleDocument' in window === false) {
 			// Apply the scale factor
 			scale = scale * _default.scaleFactor;
 
-			container.style.transform = 'scale(' + scale + ')';
+			// Keep the original positioning approach for both scenarios
 			container.style.position = 'absolute';
 			container.style.left = '50%';
-
+			
 			switch (_default.alignment) {
 				case 'center':
 					container.style.top = '50%';
@@ -85,6 +101,14 @@ if ('HypeScaleDocument' in window === false) {
 					container.style.transform = 'translate(-50%, -100%) scale(' + scale + ')';
 					container.style.transformOrigin = 'bottom center';
 					break;
+			}
+			
+			// If in a parent container, ensure the parent has position relative
+			if (!isDirectChildOfBody && _default.useParentContainer) {
+				const parent = container.parentElement;
+				if (window.getComputedStyle(parent).position === 'static') {
+					parent.style.position = 'relative';
+				}
 			}
 		}
 
@@ -113,7 +137,7 @@ if ('HypeScaleDocument' in window === false) {
 		window.HYPE_eventListeners.unshift({ type: 'HypeLayoutRequest', callback: HypeLayoutRequest });
 
 		return {
-			version: '1.0.3',
+			version: '1.0.4',
 			setDefault: setDefault,
 			getDefault: getDefault
 		};
