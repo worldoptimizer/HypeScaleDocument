@@ -1,5 +1,5 @@
 /*!
- * Hype Scale Document
+ * Hype Scale Document v1.0.4
  * Copyright (2025) Max Ziebell, (https://maxziebell.de). MIT-license
  */
 
@@ -9,7 +9,7 @@
 * 1.0.1 Added minScale and maxScale options
 * 1.0.2 Added alignment options as alignment
 * 1.0.3 Added scaleFactor option with default value of 1
-* 1.0.4 Added support for scaling based on parent container size
+* 1.0.4 If document width/height is 100% avoid scaling the document
  */
 
 // Ensure the extension isn't redefined
@@ -22,8 +22,7 @@ if ('HypeScaleDocument' in window === false) {
 			maxScale: null,
 			minScale: null,
 			alignment: 'center', // Options: 'top', 'center', 'bottom'
-			scaleFactor: 1,
-			useParentContainer: true // New option to enable/disable parent container scaling
+			scaleFactor: 1
 		};
 
 		function setDefault(key, value) {
@@ -39,52 +38,45 @@ if ('HypeScaleDocument' in window === false) {
 		}
 
 		function scaleHypeDocument(hypeDocument) {
-			// Early return if scaling is disabled
+			// Guard: scaling disabled
 			if (_default.scaleMode === 'none') {
-				document.documentElement.style.overflow = '';
+				if (document.documentElement.style.overflow) {
+					document.documentElement.style.removeProperty('overflow');
+				}
 				return;
 			}
 
 			const container = document.getElementById(hypeDocument.documentId());
 			if (!container) return;
 
-			document.documentElement.style.overflow = 'hidden';
-
-			// Determine if container is directly under body or has another parent
-			const isDirectChildOfBody = container.parentElement === document.body;
-			
-			// Get parent dimensions based on container position
-			var parentWidth, parentHeight;
-			
-			if (!isDirectChildOfBody && _default.useParentContainer) {
-				// Use parent container dimensions
-				const parent = container.parentElement;
-				parentWidth = parent.clientWidth;
-				parentHeight = parent.clientHeight;
-			} else {
-				// Use window dimensions (original behavior)
-				parentWidth = window.innerWidth;
-				parentHeight = window.innerHeight;
+			// Special case: let CSS handle layout if width or height is 100%
+			if (container.style.width === '100%' || container.style.height === '100%') {
+				container.style.removeProperty('position');
+				container.style.removeProperty('left');
+				container.style.removeProperty('top');
+				container.style.removeProperty('transform-origin');
+				container.style.removeProperty('transform');
+				document.documentElement.style.removeProperty('overflow');
+				return;
 			}
 
+			document.documentElement.style.overflow = 'hidden';
+
+			var parentWidth = window.innerWidth;
+			var parentHeight = window.innerHeight;
 			var docWidth = container.offsetWidth;
 			var docHeight = container.offsetHeight;
-
 			var scaleX = parentWidth / docWidth;
 			var scaleY = parentHeight / docHeight;
-
 			var scale = (_default.scaleMode === 'contain') ? Math.min(scaleX, scaleY) : Math.max(scaleX, scaleY);
-
 			if (_default.minScale !== null) scale = Math.max(_default.minScale, scale);
 			if (_default.maxScale !== null) scale = Math.min(_default.maxScale, scale);
-			
-			// Apply the scale factor
 			scale = scale * _default.scaleFactor;
 
-			// Keep the original positioning approach for both scenarios
 			container.style.position = 'absolute';
 			container.style.left = '50%';
-			
+			container.style.transform = 'scale(' + scale + ')';
+
 			switch (_default.alignment) {
 				case 'center':
 					container.style.top = '50%';
@@ -102,31 +94,27 @@ if ('HypeScaleDocument' in window === false) {
 					container.style.transformOrigin = 'bottom center';
 					break;
 			}
-			
-			// If in a parent container, ensure the parent has position relative
-			if (!isDirectChildOfBody && _default.useParentContainer) {
-				const parent = container.parentElement;
-				if (window.getComputedStyle(parent).position === 'static') {
-					parent.style.position = 'relative';
-				}
-			}
+
 		}
 
 		function HypeDocumentLoad(hypeDocument, element, event) {
-			// Early return if scaling is disabled
+			// Guard: scaling disabled if initial scaleMode is 'none'
 			if (_default.scaleMode === 'none') return;
 
-			scaleHypeDocument(hypeDocument);
+			// delay on layout request	
+			requestAnimationFrame(function () {
+				scaleHypeDocument(hypeDocument);
+			});
 			window.addEventListener('resize', function () {
 				scaleHypeDocument(hypeDocument);
 			});
 		}
 
 		function HypeLayoutRequest(hypeDocument, element, event) {
-			// Early return if scaling is disabled
-			if (_default.scaleMode === 'none') return;
-			
-			scaleHypeDocument(hypeDocument);
+			// delay on layout request
+			requestAnimationFrame(function () {
+				scaleHypeDocument(hypeDocument);
+			});
 		}
 
 		if ('HYPE_eventListeners' in window === false) {
