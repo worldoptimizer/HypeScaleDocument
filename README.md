@@ -8,6 +8,20 @@ A Tumult Hype extension for scaling documents to fit different screen sizes. Thi
 
 HypeScaleDocument provides a way to automatically scale your Hype documents using different scaling modes like 'contain' or 'cover'. It handles resizing events and applies transformations to maintain your document's aspect ratio while fitting it within the viewport according to your preferences.
 
+## Content Delivery Network (CDN)
+
+Latest version can be linked into your project using the following in the head section of your project:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/worldoptimizer/HypeScaleDocument/HypeScaleDocument.min.js"></script>
+```
+Optionally you can also link a SRI version or specific releases. 
+Read more about that on the JsDelivr (CDN) page for this extension at https://www.jsdelivr.com/package/gh/worldoptimizer/HypeScaleDocument
+
+Learn how to use the latest extension version and how to combine extensions into one file at
+https://github.com/worldoptimizer/HypeCookBook/wiki/Including-external-files-and-Hype-extensions
+
+
 ## Default Configuration Options
 
 The extension comes with the following default settings:
